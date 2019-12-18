@@ -5,7 +5,7 @@ SetFactory("OpenCASCADE");
 scale = 2;
 lc_c = 5e-4*scale;    lc_b = 2*scale;
 
-// Geometry ------------------------------------------------------------------*/
+/* Geometry ------------------------------------------------------------------*/
 Circle(1) = {0, 0, 0, 0.5, 0, 2*Pi};
 Circle(2) = {0, 0, 0, 15, 0, 2*Pi};
 
@@ -17,7 +17,7 @@ Plane Surface(1) = {2, 1};
 Characteristic Length {1} = lc_c;
 Characteristic Length {2} = lc_b;
 
-// Physical Entities ---------------------------------------------------------*/
+/* Physical Entities ---------------------------------------------------------*/
 Physical Surface("Domain") = {1};
 
 Physical Curve("Cylinder") = {1};

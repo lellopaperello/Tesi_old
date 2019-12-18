@@ -23,8 +23,8 @@ Physical Curve("Cylinder") = {1};
 Physical Curve("Boundary") = {2};
 
 /* Mesh ----------------------------------------------------------------------*/
-Characteristic Length {1} = lc_c;
-Characteristic Length {2} = lc_b;
+// Characteristic Length {1} = lc_c;
+// Characteristic Length {2} = lc_b;
 
 // Background Mesh
 // Field 1: Distance from the centre
@@ -42,9 +42,9 @@ Field[10].FieldsList = {2};
 
 Background Field = 2;
 
-// Mesh.CharacteristicLengthExtendFromBoundary = 0;
-// Mesh.CharacteristicLengthFromPoints = 0;
-// Mesh.CharacteristicLengthFromCurvature = 0;
+Mesh.CharacteristicLengthExtendFromBoundary = 0;
+Mesh.CharacteristicLengthFromPoints = 0;
+Mesh.CharacteristicLengthFromCurvature = 0;
 
 // Selecting Frontal-Delaunay Algorithm
 Mesh.Algorithm = 2;

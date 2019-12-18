@@ -8,10 +8,10 @@ Re_lim = 2;
 cd_exact =@(Re) 24 .* (1 + 0.15.* Re.^0.687) ./ Re;
 
 % Working dir: [ 'Cylinder', 'Sphere' ]
-work_dir = 'Cylinder'
+work_dir = 'Sphere'
 
 % Import data
-path = ['/home/lello/Desktop/Tesi/', work_dir, '/solution0'];
+path = ['/home/lello/Desktop/Tesi/', work_dir, '/solution/polars'];
 % Get a list of all files and folders in this folder.
 files = dir(path);
 % Get a logical vector that tells which is a directory.
@@ -26,13 +26,21 @@ for k = 3 : length(subFolders)
   subFolders(k).cd = importdata([path '/' subFolders(k).name '/cd.dat']);
   subFolders(k).conv = importdata([path '/' subFolders(k).name '/conv.dat']);
   if strcmp(work_dir, 'Cylinder') && strcmp(limit, 'conv')
-        subFolders(k).err = norm(subFolders(k).cd(subFolders(k).conv < (EXIT_ITER-1)) - ...
-                                cd_exact(subFolders(k).Re(subFolders(k).conv < (EXIT_ITER-1))) ) / ...
-                                length(subFolders(k).Re(subFolders(k).conv < (EXIT_ITER-1)));
+    subFolders(k).err = norm(subFolders(k).cd(subFolders(k).conv < (EXIT_ITER-1)) - ...
+                        cd_exact(subFolders(k).Re(subFolders(k).conv < (EXIT_ITER-1))) ) / ...
+                        length(subFolders(k).Re(subFolders(k).conv < (EXIT_ITER-1)));
   elseif strcmp(work_dir, 'Cylinder') && strcmp(limit, 'Re')
-        subFolders(k).err = norm(subFolders(k).cd(subFolders(k).Re > Re_lim) - ...
-                                cd_exact(subFolders(k).Re(subFolders(k).Re > Re_lim)) ) / ...
-                                length(subFolders(k).Re(subFolders(k).Re > Re_lim));
+    subFolders(k).err = norm(subFolders(k).cd(subFolders(k).Re > Re_lim) - ...
+                        cd_exact(subFolders(k).Re(subFolders(k).Re > Re_lim)) ) / ...
+                        length(subFolders(k).Re(subFolders(k).Re > Re_lim));
+  elseif strcmp(work_dir, 'Sphere') && strcmp(limit, 'conv')
+    subFolders(k).err = norm(subFolders(k).cd(subFolders(k).conv < (EXIT_ITER-1)) - ...
+                        SDC(subFolders(k).Re(subFolders(k).conv < (EXIT_ITER-1))) ) / ...
+                        length(subFolders(k).Re(subFolders(k).conv < (EXIT_ITER-1)));
+  elseif strcmp(work_dir, 'Sphere') && strcmp(limit, 'Re')
+    subFolders(k).err = norm(subFolders(k).cd(subFolders(k).Re > Re_lim) - ...
+                        SDC(subFolders(k).Re(subFolders(k).Re > Re_lim)) ) / ...
+                        length(subFolders(k).Re(subFolders(k).Re > Re_lim));      
   end
   Re_struct(k-2, 1) = min(subFolders(k).Re);
   Re_struct(k-2, 2) = max(subFolders(k).Re);
@@ -42,7 +50,7 @@ end
 cd_exact =@(Re) 24 .* (1 + 0.15.* Re.^0.687) ./ Re;
 
 % Largest interval present, but finer
-Re = linspace(min(Re_struct(:, 1)), max(Re_struct(:, 2)), 1000);
+Re = logspace(log10(min(Re_struct(:, 1))), log10(max(Re_struct(:, 2))), 1000);
 
 %% Plots
 
@@ -53,6 +61,10 @@ Legend = cell(length(subFolders)-1, 1);
 if strcmp(work_dir, 'Cylinder')
     semilogx(Re, cd_exact(Re))
     Legend{1} = 'exact - Clift';
+    hold on
+elseif strcmp(work_dir, 'Sphere')
+    semilogx(Re, SDC(Re))
+    Legend{1} = 'Standard Drag Curve';
     hold on
 end
 
