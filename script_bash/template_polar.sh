@@ -68,59 +68,85 @@ for PROBLEM in ${PROBLEM_LIST[@]}; do
       fi
     fi
     for Re in $RE_LIST; do
-      echo solving problem at Reynolds $Re with mesh $MESH
-      echo
-
-      cd $SIMULATION_DIR
-
-      if [ ${#RE_LIST[@]} -gt 0 ]; then
-        OLD_RE=$SOL_DIR
-        SOL_DIR=$SOL_DIR/Re$Re
-
-        # Velocity calculation
-        V_INF=$(echo "$Re * $MU / ($RHO * $D)" | bc -l)
-
-        echo Generating the configuration file..
+      for alpha in $ALPHA_LIST; do
+        echo solving problem at Reynolds $Re and alpha $alpha with mesh $MESH
         echo
 
-        sed -i 's/^INC_VELOCITY_INIT=.*$/INC_VELOCITY_INIT= ( '$V_INF', 0.0, 0.0 )/' SU2_config.cfg
-      fi
+        cd $SIMULATION_DIR
 
-      # Cleaning data
-      echo cleaning..
-      echo
+        if [ ${#RE_LIST} -gt 1 ]; then
+          OLD_RE=$SOL_DIR
+          SOL_DIR=$SOL_DIR/Re$Re
 
-      rm -v !(*.cfg|*.su2)
+          # Velocity calculation
+          V_INF=$(echo "$Re * $MU / ($RHO * $D)" | bc -l)
 
-      # Flow computation
-      echo
-      echo computing the flow..
+          echo Generating the configuration file..
+          echo
 
-      mpirun -n $SLURM_NTASKS $MPI_FLAGS SU2_CFD SU2_config.cfg
-      mv restart_flow.dat solution_flow.dat
-      SU2_SOL SU2_config.cfg
+          if [ ${#ALPHA_LIST} -gt 1 ]; then
+            OLD_ALPHA=$SOL_DIR
+            SOL_DIR=$SOL_DIR/a$alpha
 
-      # Solution storage
-      echo
-      echo storing the solution
+            # Components calculation
+            V_X=$(echo "$V_INF * c ($alpha * 0.01745329)" | bc -l)
+            V_Y=$(echo "-$V_INF * s ($alpha * 0.01745329)" | bc -l)
 
-      if [ ${#RE_LIST[@]} -gt 0 ]; then
+            sed -i 's/^INC_VELOCITY_INIT=.*$/INC_VELOCITY_INIT= ( '$V_X', '$V_Y', 0.0 )/' SU2_config.cfg
+          else
+            sed -i 's/^INC_VELOCITY_INIT=.*$/INC_VELOCITY_INIT= ( '$V_INF', 0.0, 0.0 )/' SU2_config.cfg
+          fi
+        fi
+
+        # Cleaning data
+        echo cleaning..
+        echo
+
+        rm -v !(*.cfg|*.su2)
+
+        # Flow computation
+        echo
+        echo computing the flow..
+
+        mpirun -n $SLURM_NTASKS $MPI_FLAGS SU2_CFD SU2_config.cfg
+        mv restart_flow.dat solution_flow.dat
+        SU2_SOL SU2_config.cfg
+
+        # Solution storage
+        echo
+        echo storing the solution
+
         mkdir -p $SOL_DIR
-        cp SU2_config.cfg $SOL_DIR/Re${Re}.cfg
-        cp flow.vtk $SOL_DIR/Re${Re}.vtk
-        cp !(*.su2|*.sh|*.vtk|*.cfg) $SOL_DIR/.
+        if [ ${#RE_LIST} -gt 1 ]; then
+          if [ ${#ALPHA_LIST} -gt 1 ]; then
+            cp SU2_config.cfg $SOL_DIR/a${alpha}.cfg
+            cp flow.vtk $SOL_DIR/a${alpha}.vtk
+            cp !(*.su2|*.sh|*.vtk|*.cfg) $SOL_DIR/.
 
-        SOL_DIR=$OLD_RE
-      else
-        mkdir -p $SOL_DIR
-        cp !(*.su2|*.sh) $SOL_DIR/.
-      fi
+            SOL_DIR=$OLD_ALPHA
+          else
+            cp SU2_config.cfg $SOL_DIR/Re${Re}.cfg
+            cp flow.vtk $SOL_DIR/Re${Re}.vtk
+            cp !(*.su2|*.sh|*.vtk|*.cfg) $SOL_DIR/.
+          fi
+          SOL_DIR=$OLD_RE
+        else
+          if [ ${#ALPHA_LIST} -gt 1 ]; then
+            cp SU2_config.cfg $SOL_DIR/a${alpha}.cfg
+            cp flow.vtk $SOL_DIR/a${alpha}.vtk
+            cp !(*.su2|*.sh|*.vtk|*.cfg) $SOL_DIR/.
 
-      echo
-      echo flow computed, solution stored.
+            SOL_DIR=$OLD_ALPHA
+          else
+            cp !(*.su2|*.sh) $SOL_DIR/.
+          fi
+        fi
 
-      cd $HOME_DIR
+        echo
+        echo flow computed, solution stored.
 
+        cd $HOME_DIR
+      done
     done
     SOL_DIR=$OLD_MESH
   done
