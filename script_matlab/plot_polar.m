@@ -1,123 +1,100 @@
-close all; clear; clc %#ok<*NOPTS>
+close all; clear; clc
 
-limit = 'Re' 
-EXIT_ITER = 2000;
-Re_lim = 2;
+% Import data -------------------------------------------------------------
+path = '/home/lello/Desktop/Tesi/Spherocylinder/solution/polars';
 
-% Exact solution - cylinder (Clift)
-cd_exact =@(Re) 24 .* (1 + 0.15.* Re.^0.687) ./ Re;
-
-% Working dir: [ 'Cylinder', 'Sphere' ]
-work_dir = 'Sphere'
-
-% Import data
-path = ['/home/lello/Desktop/Tesi/', work_dir, '/solution/polars'];
-% Get a list of all files and folders in this folder.
+% Get a list of all files and folders in this folder (polars).
 files = dir(path);
 % Get a logical vector that tells which is a directory.
 dirFlags = [files.isdir];
 % Extract only those that are directories.
 subFolders = files(dirFlags);
 
-% Import polars from this folders (skip '.' and '..')
-Re_struct = zeros(length(subFolders)-2, 2);
-for k = 3 : length(subFolders)
-  subFolders(k).Re = importdata([path '/' subFolders(k).name '/Re.dat']);
-  subFolders(k).cd = importdata([path '/' subFolders(k).name '/cd.dat']);
-  subFolders(k).conv = importdata([path '/' subFolders(k).name '/conv.dat']);
-  if strcmp(work_dir, 'Cylinder') && strcmp(limit, 'conv')
-    subFolders(k).err = norm(subFolders(k).cd(subFolders(k).conv < (EXIT_ITER-1)) - ...
-                        cd_exact(subFolders(k).Re(subFolders(k).conv < (EXIT_ITER-1))) ) / ...
-                        length(subFolders(k).Re(subFolders(k).conv < (EXIT_ITER-1)));
-  elseif strcmp(work_dir, 'Cylinder') && strcmp(limit, 'Re')
-    subFolders(k).err = norm(subFolders(k).cd(subFolders(k).Re > Re_lim) - ...
-                        cd_exact(subFolders(k).Re(subFolders(k).Re > Re_lim)) ) / ...
-                        length(subFolders(k).Re(subFolders(k).Re > Re_lim));
-  elseif strcmp(work_dir, 'Sphere') && strcmp(limit, 'conv')
-    subFolders(k).err = norm(subFolders(k).cd(subFolders(k).conv < (EXIT_ITER-1)) - ...
-                        SDC(subFolders(k).Re(subFolders(k).conv < (EXIT_ITER-1))) ) / ...
-                        length(subFolders(k).Re(subFolders(k).conv < (EXIT_ITER-1)));
-  elseif strcmp(work_dir, 'Sphere') && strcmp(limit, 'Re')
-    subFolders(k).err = norm(subFolders(k).cd(subFolders(k).Re > Re_lim) - ...
-                        SDC(subFolders(k).Re(subFolders(k).Re > Re_lim)) ) / ...
-                        length(subFolders(k).Re(subFolders(k).Re > Re_lim));      
-  end
-  Re_struct(k-2, 1) = min(subFolders(k).Re);
-  Re_struct(k-2, 2) = max(subFolders(k).Re);
+DATA = cell(length(subFolders)-2, 2);
+for i = 1:1:length(subFolders)-2
+    % Get a list of all files and folders in this folder (meshes).
+    files = dir([path '/' subFolders(i+2).name]);
+    % Get a logical vector that tells which is a directory.
+    dirFlags = [files.isdir];
+    % Extract only those that are directories.
+    subsubFolders = files(dirFlags);
+    
+    DATA{i, 1} = subFolders(i+2).name;
+    DATA{i, 2} = cell(length(subsubFolders)-2, 2);
+    for j = 1:1:length(subsubFolders)-2
+        DATA{i, 2}{j, 1} = subsubFolders(j+2).name;
+        DATA{i, 2}{j, 2}(:, 1) = importdata([path '/' subFolders(i+2).name '/' subsubFolders(j+2).name '/alpha.dat']);
+        DATA {i, 2}{j, 2}(:, 2) = -importdata([path '/' subFolders(i+2).name '/' subsubFolders(j+2).name '/cl.dat']);
+        DATA{i, 2}{j, 2}(:, 3) = importdata([path '/' subFolders(i+2).name '/' subsubFolders(j+2).name '/cd.dat']);
+        DATA{i, 2}{j, 2}(:, 4) = importdata([path '/' subFolders(i+2).name '/' subsubFolders(j+2).name '/cm.dat']);
+        DATA{i, 2}{j, 2}(:, 5) = importdata([path '/' subFolders(i+2).name '/' subsubFolders(j+2).name '/cfx.dat']);
+        DATA{i, 2}{j, 2}(:, 6) = -importdata([path '/' subFolders(i+2).name '/' subsubFolders(j+2).name '/cfy.dat']);
+        DATA{i, 2}{j, 2}(:, 7) = importdata([path '/' subFolders(i+2).name '/' subsubFolders(j+2).name '/cfz.dat']);
+        % Corrections
+        DATA{i, 2}{j, 2}(:, 4) = DATA{i, 2}{j, 2}(:, 4) * 2;
+        % cl and cd recalculation
+        DATA{i, 2}{j, 2}(:, 8) = DATA{i, 2}{j, 2}(:, 6) .* cosd(DATA{i, 2}{j, 2}(:, 1)) - DATA{i, 2}{j, 2}(:, 5) .* sind(DATA{i, 2}{j, 2}(:, 1));
+        DATA{i, 2}{j, 2}(:, 9) = DATA{i, 2}{j, 2}(:, 6) .* sind(DATA{i, 2}{j, 2}(:, 1)) + DATA{i, 2}{j, 2}(:, 5) .* cosd(DATA{i, 2}{j, 2}(:, 1));
+    end
 end
 
-% Exact solution - cylinder (Clift)
-cd_exact =@(Re) 24 .* (1 + 0.15.* Re.^0.687) ./ Re;
-
-% Largest interval present, but finer
-Re = logspace(log10(min(Re_struct(:, 1))), log10(max(Re_struct(:, 2))), 1000);
+% Load References ---------------------------------------------------------
+REF{1} = importdata('/home/lello/Desktop/Tesi/Spherocylinder/reference/Re10_clcdcm.dat');
+REF{2} = importdata('/home/lello/Desktop/Tesi/Spherocylinder/reference/Re300_clcdcm.dat');
 
 %% Plots
-
-figure('Name', 'Drag curves')
-Legend = cell(length(subFolders)-1, 1);
-
-% Reference
-if strcmp(work_dir, 'Cylinder')
-    semilogx(Re, cd_exact(Re))
-    Legend{1} = 'exact - Clift';
+% Lift
+for j = 1:1:size(DATA{1, 2}, 1)
+    figure('Name', DATA{1, 2}{j, 1})
+    Legend = cell(size(DATA, 1)+2, 1);
+    plot(REF{j}(1:10, 1), REF{j}(1:10, 2), '-xr')
+    Legend{1} = 'Fluent';
     hold on
-elseif strcmp(work_dir, 'Sphere')
-    semilogx(Re, SDC(Re))
-    Legend{1} = 'Standard Drag Curve';
+    plot(REF{j}(11:end, 1), REF{j}(11:end, 2))
+    Legend{2} = 'Zastawny - DNS';
+    for i = 1:1:size(DATA, 1)
+        plot(DATA{i, 2}{j, 2}(:, 1), DATA{i, 2}{j, 2}(:, 8), '-s')
+        Legend{i+2} = DATA{i, 1};
+    end
+    legend(Legend)
+    xlabel('$\alpha$ \ [rad]', 'FontSize', 14, 'Interpreter', 'Latex')
+    ylabel('$c_{L}$ \ [-]', 'FontSize', 14, 'Interpreter', 'Latex')
+end
+
+% Drag
+for j = 1:1:size(DATA{1, 2}, 1)
+    figure('Name', DATA{1, 2}{j, 1})
+    Legend = cell(size(DATA, 1)+2, 1);
+    plot(REF{j}(1:10, 1), REF{j}(1:10, 3), '-xr')
+    Legend{1} = 'Fluent';
     hold on
+    plot(REF{j}(11:end, 1), REF{j}(11:end, 3))
+    Legend{2} = 'Zastawny - DNS';
+    for i = 1:1:size(DATA, 1)
+        plot(DATA{i, 2}{j, 2}(:, 1), DATA{i, 2}{j, 2}(:, 9), '-s')
+        Legend{i+2} = DATA{i, 1};
+    end
+    legend(Legend)
+    xlabel('$\alpha$ \ [rad]', 'FontSize', 14, 'Interpreter', 'Latex')
+    ylabel('$c_{D}$ \ [-]', 'FontSize', 14, 'Interpreter', 'Latex')
 end
 
-% CFD
-for k = 3 : length(subFolders)
-    semilogx(subFolders(k).Re, subFolders(k).cd)
-    Legend{k-1} = regexprep(subFolders(k).name, '_(.*)', ' - $1');
-%     Legend{k-1} = regexprep(subFolders(k).name, '_(.*)', '_{$1}');
-%     Legend{k-1} = ['$ \mathrm{' regexprep(subFolders(k).name, '_(.*)', '_{$1}') '} $'];
+% Moment
+for j = 1:1:size(DATA{1, 2}, 1)
+    figure('Name', DATA{1, 2}{j, 1})
+    Legend = cell(size(DATA, 1)+3, 1);
+    plot(REF{j}(1:10, 1), REF{j}(1:10, 4), '-xr')
+    Legend{1} = 'Fluent';
+    hold on
+    plot(REF{j}(11:end, 1), REF{j}(11:end, 4))
+    Legend{2} = 'Zastawny - DNS';
+    plot(REF{j}(1:10, 1), REF{j}(1:10, 4)/2, '-xr')
+    Legend{3} = 'Fluent rescaled';
+    for i = 1:1:size(DATA, 1)
+        plot(DATA{i, 2}{j, 2}(:, 1), DATA{i, 2}{j, 2}(:, 4), '-s')
+        Legend{i+3} = DATA{i, 1};
+    end
+    legend(Legend)
+    xlabel('$\alpha$ \ [rad]', 'FontSize', 14, 'Interpreter', 'Latex')
+    ylabel('$c_{M}$ \ [-]', 'FontSize', 14, 'Interpreter', 'Latex')
 end
-
-% legend(Legend, 'FontSize', 12)
-legend(Legend, 'FontSize', 14, 'Interpreter', 'Latex')
-
-xlabel('$Re$ \ [-]', 'FontSize', 14, 'Interpreter', 'Latex')
-ylabel('$c_{D}$ \ [-]', 'FontSize', 14, 'Interpreter', 'Latex')
-
-
-%% Errors
-
-figure('Name', 'Error extimation')
-hold on
-Legend = cell(length(subFolders)-2, 1);
-
-for k = 3 : length(subFolders)
-    scatter(k, subFolders(k).err, 'filled')
-    Legend{k-2} = regexprep(subFolders(k).name, '_(.*)', ' - $1');
-%     Legend{k-1} = regexprep(subFolders(k).name, '_(.*)', '_{$1}');
-%     Legend{k-1} = ['$ \mathrm{' regexprep(subFolders(k).name, '_(.*)', '_{$1}') '} $'];
-end
-
-% legend(Legend, 'FontSize', 12)
-legend(Legend, 'FontSize', 14, 'Interpreter', 'Latex')
-
-ylabel('$ \frac{|| c_{D, ex} - c_{D} ||}{\mathrm{lenght}(c_D)}$ \ [-]', ...
-       'FontSize', 14, 'Interpreter', 'Latex')
-
-
-
-% subFolders(k).err = 0;
-% subFolders(k).err = norm(subFolders(k).cd(subFolders(k).conv<(EXIT_ITER-1)) - ...
-%                     cd_exact(subFolders(k).Re(subFolders(k).conv<(EXIT_ITER-1))) ) / ...
-%                     length(subFolders(k).Re(subFolders(k).conv<(EXIT_ITER-1)));
-
-
-
-
-
-
-
-
-
-
-
-
-
