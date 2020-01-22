@@ -9,7 +9,7 @@ x0 = zeros(6, 1);
 global Equal
 global zddot
 global toll
-toll = 1e-4;
+toll = 1e-1;
 zddot = toll;
 Equal = false;
 options = odeset('Events', @terminal_velocity);
