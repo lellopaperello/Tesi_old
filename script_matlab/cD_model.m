@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 function cD = cD_model(Re, model, param)
 % Implementazione dei vari modelli di cD presenti in letteratura
 % deq = param.deq;
@@ -14,10 +13,6 @@ K2 = param.K2;
 % mu = 1.175e-5;
 % 
 % Re = rho * v * deq / mu;
-=======
-function cD = cD_model(model, varargin)
-% Implementazione dei vari modelli di cD presenti in letteratura
->>>>>>> d82040093e7bb7b1e10d87883f429baa8e255aa0
 
 switch model
     case 'debug'
