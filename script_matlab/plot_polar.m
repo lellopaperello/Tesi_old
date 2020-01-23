@@ -26,9 +26,9 @@ for i = 1:1:length(subFolders)-2
         DATA{i, 2}{j, 2}(:, 1) = importdata([path '/' subFolders(i+2).name '/' subsubFolders(j+2).name '/alpha.dat']);
         DATA {i, 2}{j, 2}(:, 2) = -importdata([path '/' subFolders(i+2).name '/' subsubFolders(j+2).name '/cl.dat']);
         DATA{i, 2}{j, 2}(:, 3) = importdata([path '/' subFolders(i+2).name '/' subsubFolders(j+2).name '/cd.dat']);
-        DATA{i, 2}{j, 2}(:, 4) = importdata([path '/' subFolders(i+2).name '/' subsubFolders(j+2).name '/cm.dat']);
+        DATA{i, 2}{j, 2}(:, 4) = -importdata([path '/' subFolders(i+2).name '/' subsubFolders(j+2).name '/cm.dat']);
         DATA{i, 2}{j, 2}(:, 5) = importdata([path '/' subFolders(i+2).name '/' subsubFolders(j+2).name '/cfx.dat']);
-        DATA{i, 2}{j, 2}(:, 6) = -importdata([path '/' subFolders(i+2).name '/' subsubFolders(j+2).name '/cfy.dat']);
+        DATA{i, 2}{j, 2}(:, 6) = importdata([path '/' subFolders(i+2).name '/' subsubFolders(j+2).name '/cfy.dat']);
         DATA{i, 2}{j, 2}(:, 7) = importdata([path '/' subFolders(i+2).name '/' subsubFolders(j+2).name '/cfz.dat']);
         % Corrections
         DATA{i, 2}{j, 2}(:, 4) = DATA{i, 2}{j, 2}(:, 4) * 2;

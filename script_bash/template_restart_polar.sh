@@ -63,17 +63,22 @@ for PROBLEM in ${PROBLEM_LIST[@]}; do
       if [ ${#MESH_LIST[@]} -gt 1 ]; then
         OLD_MESH=$SOL_DIR
         SOL_DIR=$SOL_DIR/$MESH
-        mkdir -p $SOL_DIR
-        cp $GRID_DIR/${MESH}.su2 $SOL_DIR/.
       fi
     fi
     for Re in $RE_LIST; do
       for alpha in $ALPHA_LIST; do
-        echo solving problem at Reynolds $Re and alpha $alpha with mesh $MESH
-        echo
-
         cd $SIMULATION_DIR
 
+        # Cleaning data
+        echo cleaning..
+        echo
+
+        rm -v !(*.cfg|*.su2)
+
+        echo Restarting problem at Reynolds $Re and alpha $alpha with mesh $MESH
+        echo
+
+        # Recovering previous solution
         if [ $(wc -w <<< $RE_LIST) -gt 1 ]; then
           OLD_RE=$SOL_DIR
           SOL_DIR=$SOL_DIR/Re$Re
@@ -83,21 +88,8 @@ for PROBLEM in ${PROBLEM_LIST[@]}; do
           fi
         fi
 
-        echo Generating the configuration file..
-        echo
-
-        # Velocity calculation
-        V_INF=$(echo "$Re * $MU / ($RHO * $D)" | bc -l)
-        V_X=$(echo "$V_INF * c ($alpha * 0.01745329)" | bc -l)
-        V_Y=$(echo "-$V_INF * s ($alpha * 0.01745329)" | bc -l)
-
-        sed -i 's/^INC_VELOCITY_INIT=.*$/INC_VELOCITY_INIT= ( '$V_X', '$V_Y', 0.0 )/' SU2_config.cfg
-
-        # Cleaning data
-        echo cleaning..
-        echo
-
-        rm -v !(*.cfg|*.su2)
+        cp $SOL_DIR/solution_flow.dat .
+        cp $SOL_DIR/*.cfg .
 
         # Flow computation
         echo
@@ -110,6 +102,8 @@ for PROBLEM in ${PROBLEM_LIST[@]}; do
         # Solution storage
         echo
         echo storing the solution
+
+        SOL_DIR=${SOL_DIR}_restarted
 
         mkdir -p $SOL_DIR
         if [ $(wc -w <<< $RE_LIST) -gt 1 ]; then
