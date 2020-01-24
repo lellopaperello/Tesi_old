@@ -22,6 +22,10 @@
 *.vtk
 *.msh
 
+# Temporary files #
+###################
+*.m~
+
 # Ignored Folders #
 ###################
 Papers
