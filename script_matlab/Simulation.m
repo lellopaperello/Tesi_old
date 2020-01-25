@@ -1,4 +1,4 @@
-close all; clear; clc
+lose all; clear; clc
 % Risoluzione delle equazioni del moto di un corpo rigido in caduta libera
 % e calcolo della velocità limite
 
