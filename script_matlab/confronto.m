@@ -1,6 +1,5 @@
-% Confronto
+%% Modelli cD
 close all; clear; clc
-
 addpath('LiteratureModels')
 
 % Implemented, working models
@@ -34,3 +33,51 @@ for k = 1:1:length(geometries)
     end
     legend(Legend)
 end
+
+
+%% Velocita' limite
+close all; clear; clc
+addpath('LiteratureModels')
+
+% Implemented, working models for cD calculation
+% ["Holzer&Sommerfeld", "Holzer&Sommerfeld_simplified", "Swmee&Ojha",
+%  "Ganser", "Chien", "Dioguardi"]
+model_cD = "debug";
+
+% Implemented, working geometries
+% ["sphere", "cube", "cylinder", "spherocylinder"]
+geometry = "sphere";
+
+% Implemented, working models for density calculation
+% ["Brandes"]
+model_rho = "Brandes";
+
+% Ambient parameters
+rho_a = 1.225;
+mu = 1.715e-5;
+g = 9.81;
+T = 263.15;
+D = 0.005;
+r_eq = D/2;
+
+rho = rho_snow(D, model_rho);
+
+m = 4/3*pi * r_eq.^3 * rho;
+S = 4*pi * r_eq.^2;
+Re_v = rho * D / mu;
+
+param = ShapeParameters (model_cD, geometry, 1, 1, 5, inf);
+
+% Equazione semplificata monodimensionale per la sola coordinata z
+%
+%          ddz/ddt = 1/2 rho_air dz/dt^2 S cD - mg 
+%
+% Ricerca soluzione di equilibrio => velocita' limite
+%
+% v_lim^2 cD(v_lim) = 2 m g / rho_air S
+
+z_eqn =@(v) v.^2 * cD_model(Re_v * v, model_cD, param) - 2*m*g / (rho_a * S);
+
+% Equation solution
+v_lim = abs(fzero(z_eqn, 0.01));
+
