@@ -17,15 +17,18 @@ K2 = param.K2;
 switch model
     case 'debug'
         cD = 1;
+    case 'Standard'
+        % For spheres ONLY!!
+        cD = SDC(Re);
     case 'Holzer&Sommerfeld'
         cD = 8/(Re * sqrt(phi_par)) + 16/ (Re * phi) ...
            + 3/ (sqrt(Re) + phi^0.75) ...
-           + 0.42*10^(0.4 * (-log10(phi)^0.2)) / phi_perp;
+           + 0.42*10^(0.4 * (-log10(phi))^0.2) / phi_perp;
     case 'Holzer&Sommerfeld_simplified'
         cD = 8/(Re * sqrt(phi_perp)) + 16/ (Re * phi) ...
            + 3/ (sqrt(Re) + phi^0.75) ...
-           + 0.42*10^(0.4 * (-log10(phi)^0.2)) / phi_perp;
-    case 'Swmee&Ojha'
+           + 0.42*10^(0.4 * (-log10(phi))^0.2) / phi_perp;
+    case 'Swamme&Ojha'
         cD = 48.5 / ((1 + 4.5*beta^0.35)^0.8 * Re^0.64) ...
            + (Re / (Re + 100 + 100*beta))^0.32 ...
            * 1/ (beta^0.18 + 1.05*beta^0.8);

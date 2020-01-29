@@ -41,7 +41,7 @@ if sum(models == 'Holzer&Sommerfeld_simplified') > 0
     SP(2) = 'phi';
     SP(3) = 'phi_perp';
 end
-if sum(models == 'Swmee&Ojha') > 0
+if sum(models == 'Swamme&Ojha') > 0
     SP(1) = 'deq';
     SP(6) = 'beta';
 end

@@ -31,7 +31,7 @@ cylinder.phi_perp = 0.826 * a^(2/3);
 cylinder.phi_par = 2.593 * (r * h^2)^(1/3) / ((pi - 2)*h + pi*r);
 cylinder.psi = cylinder.phi / X_cyl(r, h);
 cylinder.beta = sqrt(1/a);
-cylinder.K1 = (1.101 * a^(-1/3) + 0.667/sqrt(cylinder.phi))^(-1) ...
+cylinder.K1 = (0.367 * a^(-1/3) + 0.667/sqrt(cylinder.phi))^(-1) ...
             - 4.089 * (r^2 * h)^(1/3) / D;
 cylinder.K2 = K2(cylinder.phi);
 
