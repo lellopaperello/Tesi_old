@@ -8,6 +8,7 @@ psi = param.psi;
 beta = param.beta;
 K1 = param.K1;
 K2 = param.K2;
+Ar = param.Ar;
 
 % rho = 1.225;
 % mu = 1.175e-5;
@@ -39,4 +40,6 @@ switch model
         cD = 30 / Re + 67.289*exp(-5.05*phi);
     case 'Dioguardi'
         cD = SDC(Re) / (Re^2 * psi) * (Re / 1.1883)^2.0725;
+    case 'Heymsfiled&Westbrook'
+        cD = 0.35 * (1 + 8/sqrt(Re))^2 * Ar^0.5;
 end

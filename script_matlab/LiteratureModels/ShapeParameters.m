@@ -13,11 +13,12 @@ param.psi = 0;
 param.beta = 0;
 param.K1 = 0;
 param.K2 = 0;
+param.Ar = 0;
 
 param = repmat(param, 1, length(geometry));
 
 % Array of all the possible shape parameters
-SP = repmat("null", 1, 8);
+SP = repmat("null", 1, 9);
 % Template
 if sum(models == 'All') > 0
     SP(1) = 'deq';
@@ -28,6 +29,7 @@ if sum(models == 'All') > 0
     SP(6) = 'beta';
     SP(7) = 'K1';
     SP(8) = 'K2';
+    SP(9) = 'Ar';
 end
 
 if sum(models == 'Holzer&Sommerfeld') > 0
@@ -60,6 +62,9 @@ if sum(models == 'Dioguardi') > 0
     SP(2) = 'phi';
     SP(5) = 'psi';
     SP(6) = 'beta';
+end
+if sum(models == 'Heymsfiled&Westbrook') > 0
+    SP(9) = 'Ar';
 end
 
 % Remove unused parameters

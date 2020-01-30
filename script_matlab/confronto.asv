@@ -6,7 +6,7 @@ addpath('LiteratureModels')
 % ["Holzer&Sommerfeld", "Holzer&Sommerfeld_simplified", "Swmee&Ojha",
 %  "Ganser", "Chien", "Dioguardi", "Heymsfiled&Westbrook", 
 %  "Standard" (SPHERE ONLY!), "debug"]
-models = ["Holzer&Sommerfeld", ...
+models = ["Holzer&Sommerfeld", "Holzer&Sommerfeld_simplified", ...
           "Ganser", "Heymsfiled&Westbrook"];
 
 % Implemented, working geometries
@@ -54,7 +54,7 @@ addpath('LiteratureModels')
 % ["Holzer&Sommerfeld", "Holzer&Sommerfeld_simplified", "Swmee&Ojha",
 %  "Ganser", "Chien", "Dioguardi", "Heymsfiled&Westbrook", 
 %  "Standard" (SPHERE ONLY!), "debug"]
-model_cD = ["Holzer&Sommerfeld", ...
+model_cD = ["Holzer&Sommerfeld", "Holzer&Sommerfeld_simplified", ...
             "Ganser", "Heymsfiled&Westbrook"];
 
 % Implemented, working geometries
@@ -68,13 +68,8 @@ model_rho = "Brandes";
 % Implemented references model for terminal velocity - diameter
 % relationships
 model_ref_default = ["Brandes - 2008, T = -1°C", "Brandes - 2008, T = -5°C", ...
-"Brandes - 2008, T = -10°C", "Kuhn-Martin - 2019, graupel", "Kuhn-Martin - 2019, rimed needles" ...
-"Justo-Bosworth - 1971, dendrites", "Justo-Bosworth - 1971, plates & columns", ...
-"Justo-Bosworth - 1971, average"];
+"Brandes - 2008, T = -10°C", "Kuhn-Martin - 2019, graupel", "Kuhn-Martin - 2019, rimed needles"];
 model_ref = 'All';
-if sum(model_ref == 'All') == length(model_ref)
-    model_ref = model_ref_default;
-end
 
 % Ambient parameters
 rho_a = 1.225;
@@ -125,7 +120,7 @@ for k = 1:1:length(geometry)
     end
     % References
     for i = 1:1:length(model_ref)
-        plot(D, reference(D, model_ref(i)), '--')
+        plot(D, reference(D, model_ref(i)))
         Legend{length(model_cD) + i} = model_ref(i);
     end
     title(geometry(k))
@@ -134,36 +129,4 @@ for k = 1:1:length(geometry)
     legend(Legend);
 end
 
-%% Reference comparison
-close all; clear; clc 
-
-% Implemented references model for terminal velocity - diameter
-% relationships
-model_ref_default = ["Brandes - 2008, T = -1°C", "Brandes - 2008, T = -5°C", ...
-"Brandes - 2008, T = -10°C", "Kuhn-Martin - 2019, graupel", "Kuhn-Martin - 2019, rimed needles" ...
-"Justo-Bosworth - 1971, dendrites", "Justo-Bosworth - 1971, plates & columns", ...
-"Justo-Bosworth - 1971, average"];
-model_ref = 'All';
-if sum(model_ref == 'All') == length(model_ref)
-    model_ref = model_ref_default;
-end
-
-D = 0.001:0.0001:0.02;
-
-figure('Name', 'Reference comparison')
-Legend = cell(1, length(model_ref));
-hold on
-
-plot(D*1e3, reference(D, model_ref(1)), 'r-')
-plot(D*1e3, reference(D, model_ref(2)), 'r-.')
-plot(D*1e3, reference(D, model_ref(3)), 'r--')
-plot(D*1e3, reference(D, model_ref(4)), 'b-')
-plot(D*1e3, reference(D, model_ref(5)), 'b--')
-plot(D*1e3, reference(D, model_ref(6)), 'k-')
-plot(D*1e3, reference(D, model_ref(7)), 'k--')
-plot(D*1e3, reference(D, model_ref(8)), 'k-.')
-
-title('Reference comparison')
-xlabel('Diameter [ mm ]')
-ylabel('Limit Velocity [ m/s ]')
-legend(model_ref);
+% Geometry comparison
