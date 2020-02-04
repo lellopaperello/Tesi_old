@@ -40,6 +40,10 @@ switch model
         cD = 30 / Re + 67.289*exp(-5.05*phi);
     case 'Dioguardi'
         cD = SDC(Re) / (Re^2 * psi) * (Re / 1.1883)^2.0725;
-    case 'Heymsfiled&Westbrook'
+    case 'Heymsfield&Westbrook'
         cD = 0.35 * (1 + 8/sqrt(Re))^2 * Ar^0.5;
+    case 'VenuMadhav&Chhabra'
+        cD = 24 / Re * (1 + 0.604*Re^0.529);
+    otherwise 
+        error('Provide a valid model!')
 end

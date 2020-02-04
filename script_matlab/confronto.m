@@ -3,23 +3,35 @@ close all; clear; clc
 addpath('LiteratureModels')
 
 % Implemented, working models for cD calculation
-% ["Holzer&Sommerfeld", "Holzer&Sommerfeld_simplified", "Swmee&Ojha",
-%  "Ganser", "Chien", "Dioguardi", "Heymsfiled&Westbrook", 
-%  "Standard" (SPHERE ONLY!), "debug"]
-models = ["Holzer&Sommerfeld", ...
-          "Ganser", "Heymsfiled&Westbrook"];
+% ["Holzer&Sommerfeld", "Holzer&Sommerfeld_simplified", "Swamme&Ojha",
+%  "Ganser", "Chien", "Dioguardi", "Heymsfield&Westbrook", 
+%  "VenuMadhav&Chhabra", "Standard" (SPHERE ONLY!), "debug"]
+models_default = ["Holzer&Sommerfeld", "Swamme&Ojha", "Chien", ...
+                  "Dioguardi", "Ganser", "Heymsfield&Westbrook", ...
+                  "VenuMadhav&Chhabra"];
+models = ["Holzer&Sommerfeld", "Ganser", "Heymsfield&Westbrook", "VenuMadhav&Chhabra"];
+if sum(models == 'All') == length(models)
+    models = models_default;
+end
 
 % Implemented, working geometries
 % ["sphere", "cube", "cylinder", "spherocylinder"]
-geometries = ["sphere", "cube", "cylinder", "spherocylinder"];
+geometries_default = ["sphere", "cube", "cylinder", "spherocylinder"];
+geometries = "cylinder";
+if sum(geometries == 'All') == length(geometries)
+    geometries = geometries_default;
+end
+
+% References
+load('../Data/cDvsRe_references.mat');
 
 % Parameters
-r = 1;              % radius for sphere, spherocylinder
+r = 0.5;            % radius for sphere, cyinder, spherocylinder
 l = 1;              % length for cube
-h = 5;              % height for spherocylinder
+h = 1.75;           % height for cylinder, spherocylinder
 D = inf;            % tube diameter (Ganser)
 
-Re = logspace(-3, 4, 1000);
+Re = logspace(-2, 5, 1000);
 cD = zeros(1, length(Re));
 
 for k = 1:1:length(geometries)
@@ -36,9 +48,17 @@ for k = 1:1:length(geometries)
         Legend{i} = models(i);
     end
     if geometries(k) == "sphere"
-        loglog(Re, SDC(Re))
+        loglog(Re, SDC(Re), '--k')
         Legend{end+1} = "Standard Drag Curve";
     end
+    % References ----------------------------------------------------------
+%     scatter(Cubes(:, 1), Cubes(:, 2), 'sk')
+%     Legend{end+1} = "Cubes, Octahydrals and Tetrahydrals";
+%     scatter(Cylinders(:, 1), Cylinders(:, 2), 'ok')
+%     Legend{end+1} = "Cylinders";
+%     scatter(Spheres(:, 1), Spheres(:, 2), 'ok', 'Filled')
+%     Legend{end+1} = "Spheres";
+    
     legend(Legend)
     title(geometries(k))
     xlabel('Re [ - ]')
@@ -52,10 +72,10 @@ addpath('LiteratureModels')
 
 % Implemented, working models for cD calculation
 % ["Holzer&Sommerfeld", "Holzer&Sommerfeld_simplified", "Swmee&Ojha",
-%  "Ganser", "Chien", "Dioguardi", "Heymsfiled&Westbrook", 
+%  "Ganser", "Chien", "Dioguardi", "Heymsfield&Westbrook", 
 %  "Standard" (SPHERE ONLY!), "debug"]
 model_cD = ["Holzer&Sommerfeld", ...
-            "Ganser", "Heymsfiled&Westbrook"];
+            "Ganser", "Heymsfield&Westbrook"];
 
 % Implemented, working geometries
 % ["sphere", "cube", "cylinder", "spherocylinder"]
@@ -89,9 +109,9 @@ for j = 1:1:length(D)
     % snow properties
     rho = rho_snow(D(j), model_rho);
     r_eq = D(j)/2;
-    m = 4/3*pi * r_eq.^3 * rho;
+    m = 4/3*pi * r_eq.^3 * (rho - rho_a);
     S = 4*pi * r_eq.^2;
-    Re_v = rho * D(j) / mu;
+    Re_v = rho_a * D(j) / mu;
 
     for k = 1:1:length(geometry)
         param = ShapeParameters (model_cD, geometry(k), 1, 1, 5, inf);
@@ -107,7 +127,7 @@ for j = 1:1:length(D)
         z_eqn =@(v) v.^2 * cD_model(Re_v * abs(v), model_cD(i), param) - 2*m*g / (rho_a * S);
 
         % Equation solution
-        v_lim(k, i, j) = abs(fzero(z_eqn, 0.01));
+        v_lim(k, i, j) = abs(fzero(z_eqn, 0.1));
         end
     end
 end
@@ -167,3 +187,34 @@ title('Reference comparison')
 xlabel('Diameter [ mm ]')
 ylabel('Limit Velocity [ m/s ]')
 legend(model_ref);
+
+%% Unicity of the solution
+close all; clear; clc
+addpath('LiteratureModels')
+
+% Implemented, working models for cD calculation
+% ["Holzer&Sommerfeld", "Holzer&Sommerfeld_simplified", "Swamme&Ojha",
+%  "Ganser", "Chien", "Dioguardi", "Heymsfield&Westbrook", 
+%  "VenuMadhav&Chhabra", "Standard" (SPHERE ONLY!), "debug"]
+models_default = ["Holzer&Sommerfeld", "Swamme&Ojha", "Chien", ...
+                  "Dioguardi", "Ganser", "Heymsfield&Westbrook", ...
+                  "VenuMadhav&Chhabra"];
+models = ["Holzer&Sommerfeld", "Ganser", "Heymsfield&Westbrook", "VenuMadhav&Chhabra"];
+if sum(models == 'All') == length(models)
+    models = models_default;
+end
+
+% Implemented, working geometries
+% ["sphere", "cube", "cylinder", "spherocylinder"]
+geometries_default = ["sphere", "cube", "cylinder", "spherocylinder"];
+geometries = "cylinder";
+if sum(geometries == 'All') == length(geometries)
+    geometries = geometries_default;
+end
+
+% Implemented, working models for density calculation
+% ["Brandes"]
+model_rho = "Brandes";
+
+% Curve for the graphcal solution of the z-equation of motion
+% cD = (rho - rho_air) / rho_air * 2*g*V/(S * v^2)
