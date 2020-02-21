@@ -1,4 +1,4 @@
-function [param] = ShapeParameters (models, geometry, r, l, h, D)
+function [param] = ShapeParameters (models, geometry, geom_param)
 % Input parser
 
 % load geometries data
@@ -63,7 +63,7 @@ if sum(models == 'Dioguardi') > 0
     SP(5) = 'psi';
     SP(6) = 'beta';
 end
-if sum(models == 'Heymsfiled&Westbrook') > 0
+if sum(models == 'Heymsfield&Westbrook') > 0
     SP(9) = 'Ar';
 end
 

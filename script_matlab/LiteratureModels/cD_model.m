@@ -18,9 +18,6 @@ Ar = param.Ar;
 switch model
     case 'debug'
         cD = 1;
-    case 'Standard'
-        % For spheres ONLY!!
-        cD = SDC(Re);
     case 'Holzer&Sommerfeld'
         cD = 8/(Re * sqrt(phi_par)) + 16/ (Re * phi) ...
            + 3/ (sqrt(Re) + phi^0.75) ...
